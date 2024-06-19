@@ -51,6 +51,7 @@ export default class User {
       } else {
         return "Password not found";
       }
+      if (!body.type) return "Type not found";
 
       await collection.insertOne(body);
 

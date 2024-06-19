@@ -2,8 +2,8 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 
-import homeRoutes from "./routes/home.js";
 import userRoutes from "./routes/user.js";
+import courseRoutes from "./routes/course.js";
 
 dotenv.config();
 
@@ -33,8 +33,8 @@ class App {
   }
 
   routes() {
-    this.app.use("/", homeRoutes);
     this.app.use("/users", userRoutes);
+    this.app.use("/courses", courseRoutes);
   }
 }
 

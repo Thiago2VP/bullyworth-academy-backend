@@ -25,9 +25,9 @@ class UserController {
     try {
       const users = new User();
 
-      const { name, email, password } = req.body;
+      const { name, email, password, type } = req.body;
 
-      const result = await users.insert({ name, email, password });
+      const result = await users.insert({ name, email, password, type });
 
       res.status(201).send(result);
     } catch (e) {
