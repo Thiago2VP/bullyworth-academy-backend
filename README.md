@@ -10,7 +10,7 @@ Question<br>
 Support material<br>
 Subscription<br>
 
-## Requisitions
+## Requests
 
 Courses (General)<br>
 Courses (Student)<br>
