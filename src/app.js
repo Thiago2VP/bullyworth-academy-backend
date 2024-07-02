@@ -4,6 +4,7 @@ import cors from "cors";
 
 import userRoutes from "./routes/user.js";
 import courseRoutes from "./routes/course.js";
+import subscriptionRoutes from "./routes/subscription.js";
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ class App {
   routes() {
     this.app.use("/users", userRoutes);
     this.app.use("/courses", courseRoutes);
+    this.app.use("/subscriptions", subscriptionRoutes);
   }
 }
 
