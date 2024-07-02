@@ -1,16 +1,6 @@
 import User from "../models/User.js";
 
 class UserController {
-  async testConnection(req, res) {
-    try {
-      const users = new User();
-      const result = await users.testConnection();
-      res.status(200).send(result);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
   async index(req, res) {
     try {
       const users = new User();

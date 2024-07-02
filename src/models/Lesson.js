@@ -79,13 +79,18 @@ export default class Lesson {
     }
   }
 
+  async recoursiveOrdenation(initialOrder, collection, course) {
+    const filtredCollection = collection.filter((lesson) => lesson.course === course);
+
+  }
+
   async delete(id) {
     if (!id) return "Id not found";
 
     try {
       await client.connect();
 
-      const collection = client.db(process.env.DATABASE).collection("course");
+      const collection = client.db(process.env.DATABASE).collection("lesson");
 
       await collection.deleteOne({ id: id });
 

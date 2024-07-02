@@ -4,20 +4,6 @@ import client from "../config/database.js";
 dotenv.config();
 
 export default class Course {
-  async testConnection() {
-    try {
-      await client.connect();
-
-      const collection = client.db(process.env.DATABASE).collection("course");
-
-      if (collection) return "Connected successfully to collection";
-    } catch (e) {
-      console.log(e);
-    } finally {
-      await client.close();
-    }
-  }
-
   async select() {
     try {
       await client.connect();
@@ -63,9 +49,10 @@ export default class Course {
       const owner = allUseers.find((user) => user.email === body.teacher);
       if (!owner) return "Teacher not exists";
       if (!owner.type) return "User type not specified";
-      if (owner.type.tolowerCase() !== "teacher") return "User is not a teacher";
+      if (owner.type !== "teacher") return "User is not a teacher";
       const date = Date.now().toString();
       body.id = `course_${date}`;
+      body.duration = 0;
 
       await collection.insertOne(body);
 
@@ -105,7 +92,7 @@ export default class Course {
 
       await collection.deleteOne({ id: id });
 
-      return "User successfully deleted";
+      return "Course successfully deleted";
     } catch (e) {
       console.log(e);
     } finally {

@@ -5,20 +5,6 @@ import bcryptjs from "bcryptjs";
 dotenv.config();
 
 export default class User {
-  async testConnection() {
-    try {
-      await client.connect();
-
-      const collection = client.db(process.env.DATABASE).collection("user");
-
-      if (collection) return "Connected successfully to collection";
-    } catch (e) {
-      console.log(e);
-    } finally {
-      await client.close();
-    }
-  }
-
   async select() {
     try {
       await client.connect();

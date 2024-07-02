@@ -1,16 +1,6 @@
 import Course from "../models/Course.js";
 
 class CourseController {
-  async testConnection(req, res) {
-    try {
-      const courses = new Course();
-      const result = await courses.testConnection();
-      res.status(200).send(result);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
   async index(req, res) {
     try {
       const courses = new Course();
