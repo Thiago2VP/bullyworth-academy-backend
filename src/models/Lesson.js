@@ -4,13 +4,14 @@ import client from "../config/database.js";
 dotenv.config();
 
 export default class Lesson {
-  async testConnection() {
+  async select() {
     try {
       await client.connect();
 
       const collection = client.db(process.env.DATABASE).collection("lesson");
 
-      if (collection) return "Connected successfully to collection";
+      const result = await collection.find({}).toArray();
+      return result;
     } catch (e) {
       console.log(e);
     } finally {
@@ -18,13 +19,14 @@ export default class Lesson {
     }
   }
 
-  async select() {
+  async selectByCourse(course) {
     try {
       await client.connect();
 
-      const collection = client.db(process.env.DATABASE).collection("course");
+      const collection = client.db(process.env.DATABASE).collection("lesson");
 
-      const result = await collection.find({}).toArray();
+      const allLessons = await collection.find({}).toArray();
+      const result = allLessons.filter((lesson) => lesson.course === course);
       return result;
     } catch (e) {
       console.log(e);
@@ -45,11 +47,27 @@ export default class Lesson {
       if (!body.duration) return "Duration not found";
       if (!body.order) return "Order not found";
       if (!body.course) return "Course not found";
+      if (!body.content) return "Content not found";
       const allCourses = await collectionCourses.find({}).toArray();
       const owner = allCourses.find((course) => course.id === body.course);
       if (!owner) return "Course not exists";
       const date = Date.now().toString();
-      body.id = `lesson_${body.course}_${date}`;
+      body.id = `lesson_${date}_${body.course}`;
+
+      const allLessons = await collection.find({}).toArray();
+      if (allLessons.length === 0) {
+        await collectionCourses.updateOne({ id: owner.id }, { $set: { lastLesson: body.order, duration: owner.duration + body.duration } });
+      } else {
+        const repitition = allLessons.filter((lesson) => lesson.order === body.order);
+        if (repitition) {
+          await collection.updateMany({ order: { $gt: body.order - 1 } }, { $inc: { order: 1 } });
+          await collectionCourses.updateOne({ id: owner.id }, { $set: { lastLesson: owner.lastLesson + 1, duration: owner.duration + body.duration } });
+        } else {
+          if (owner.lastLesson < body.order) {
+            await collectionCourses.updateOne({ id: owner.id }, { $set: { lastLesson: body.order, duration: owner.duration + body.duration } });
+          }
+        }
+      }
 
       await collection.insertOne(body);
 
@@ -68,20 +86,28 @@ export default class Lesson {
       await client.connect();
 
       const collection = client.db(process.env.DATABASE).collection("lesson");
+      const collectionCourses = client.db(process.env.DATABASE).collection("course");
+
+      const allLessons = await collection.find({}).toArray();
+      const repetition = allLessons.filter((lesson) => lesson.order === body.order && lesson.id !== id);
+      if (repetition.length > 0) return "Lesson order already exists";
+      const lesson = allLessons.find((lesson) => lesson.id === id);
+      const allCourses = await collectionCourses.find({}).toArray();
+      const owner = allCourses.find((course) => course.id === lesson.course);
 
       await collection.updateOne({ id: id }, { $set: body });
+      if (owner.lastLesson < body.order) {
+        await collectionCourses.updateOne({ id: owner.id }, { $set: { lastLesson: body.order, duration: owner.duration - lesson.duration + body.duration } });
+      } else {
+        await collectionCourses.updateOne({ id: owner.id }, { $set: { duration: owner.duration - lesson.duration + body.duration } });
+      }
 
-      return "Course successfully updated";
+      return "Lesson successfully updated";
     } catch (e) {
       console.log(e);
     } finally {
       await client.close();
     }
-  }
-
-  async recoursiveOrdenation(initialOrder, collection, course) {
-    const filtredCollection = collection.filter((lesson) => lesson.course === course);
-
   }
 
   async delete(id) {
@@ -91,10 +117,17 @@ export default class Lesson {
       await client.connect();
 
       const collection = client.db(process.env.DATABASE).collection("lesson");
+      const collectionCourses = client.db(process.env.DATABASE).collection("course");
+
+      const allLessons = await collection.find({}).toArray();
+      const lesson = allLessons.find((lesson) => lesson.id === id);
+      const allCourses = await collectionCourses.find({}).toArray();
+      const owner = allCourses.find((course) => course.id === lesson.course);
 
       await collection.deleteOne({ id: id });
+      await collectionCourses.updateOne({ id: owner.id }, { $set: { duration: owner.duration - lesson.duration } });
 
-      return "User successfully deleted";
+      return "Lesson successfully deleted";
     } catch (e) {
       console.log(e);
     } finally {

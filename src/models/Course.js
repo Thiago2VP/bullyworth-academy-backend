@@ -53,6 +53,7 @@ export default class Course {
       const date = Date.now().toString();
       body.id = `course_${date}`;
       body.duration = 0;
+      body.lastLesson = 0;
 
       await collection.insertOne(body);
 
