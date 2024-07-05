@@ -115,4 +115,13 @@ export default class User {
       await client.close();
     }
   }
+
+  async passwordIsValid(password, email) {
+    await client.connect();
+
+    const collection = client.db(process.env.DATABASE).collection("users");
+    const user = await collection.find({ email }).toArray();
+
+    return await bcryptjs.compare(password, user[0].password);
+  }
 }

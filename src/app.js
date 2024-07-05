@@ -7,6 +7,7 @@ import courseRoutes from "./routes/course.js";
 import subscriptionRoutes from "./routes/subscription.js";
 import lessonRoutes from "./routes/lesson.js";
 import supportMaterialRoutes from "./routes/supportmaterial.js";
+import tokenRoutes from "./routes/token";
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ class App {
     this.app.use("/subscriptions", subscriptionRoutes);
     this.app.use("/lessons", lessonRoutes);
     this.app.use("/supportmaterials", supportMaterialRoutes);
+    this.app.use("/tokens/", tokenRoutes);
   }
 }
 
