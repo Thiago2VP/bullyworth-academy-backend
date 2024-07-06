@@ -1,12 +1,15 @@
 import { Router } from "express";
 import supportMaterialController from "../controllers/SupportMaterial.js";
 
+import teacherRequired from "../middlewares/teacherRequired.js";
+import loginRequired from "../middlewares/loginRequired";
+
 const router = new Router();
 
-router.get("/", supportMaterialController.index);
-router.get("/:lesson", supportMaterialController.indexByLesson);
-router.post("/", supportMaterialController.insert);
-router.put("/:id", supportMaterialController.update);
-router.delete("/:id", supportMaterialController.delete);
+router.get("/", loginRequired, supportMaterialController.index);
+router.get("/:lesson", loginRequired, supportMaterialController.indexByLesson);
+router.post("/", teacherRequired, supportMaterialController.insert);
+router.put("/:id", teacherRequired, supportMaterialController.update);
+router.delete("/:id", teacherRequired, supportMaterialController.delete);
 
 export default router;
