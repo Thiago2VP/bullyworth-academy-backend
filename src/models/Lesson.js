@@ -19,11 +19,31 @@ export default class Lesson {
     }
   }
 
-  async selectByCourse(course) {
+  async selectByCourse(course, user) {
     try {
       await client.connect();
 
       const collection = client.db(process.env.DATABASE).collection("lesson");
+      const usersCollection = client.db(process.env.DATABASE).collection("user");
+
+      const allUsers = usersCollection.find({}).toArray();
+      const specificUser = allUsers.filter((userI) => userI.email === user)[0];
+
+      if (specificUser.type === "student") {
+        const subsCollection = client.db(process.env.DATABASE).collection("subscription");
+        const allSubs = await subsCollection.find({}).toArray();
+        const validSubs = allSubs.filter((sub) => sub.course === course && sub.student === user);
+        if (!(validSubs.length > 0)) return "Student not subscripted.";
+      } else {
+        const courseCollection = client.db(process.env.DATABASE).collection("course");
+        const allCourses = await courseCollection.find({}).toArray();
+        const validShow = allCourses.filter((courseI) => courseI.teacher === user);
+        let counter = 0;
+        validShow.array.forEach(courses => {
+          if (courses.id === course) counter += 1;
+        });
+        if (counter === 0) return "Course not owned.";
+      }
 
       const allLessons = await collection.find({}).toArray();
       const result = allLessons.filter((lesson) => lesson.course === course);

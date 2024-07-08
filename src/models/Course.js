@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import client from "../config/database.js";
+import Subscription from "./Subscription.js";
 
 dotenv.config();
 
@@ -28,6 +29,29 @@ export default class Course {
       const allCourses = await collection.find({}).toArray();
       const teacherCourses = allCourses.filter((course) => course.teacher === teacher);
       return teacherCourses;
+    } catch (e) {
+      console.log(e);
+    } finally {
+      await client.close();
+    }
+  }
+
+  async selectByStudent(student) {
+    try {
+      await client.connect();
+
+      const subscriptions = new Subscription();
+      const studentSubs = subscriptions.selectByStudent(student);
+      const studentCourses = [];
+
+      const collection = client.db(process.env.DATABASE).collection("course");
+      const courses = await collection.find({}).toArray();
+      studentSubs.array.forEach(sub => {
+        const selectedCourse = courses.filter((course) => course.id === sub.course);
+        if (selectedCourse[0]) studentCourses.push(selectedCourse[0]);
+      });
+
+      return studentCourses;
     } catch (e) {
       console.log(e);
     } finally {

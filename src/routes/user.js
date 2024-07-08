@@ -5,7 +5,6 @@ import loginRequired from "../middlewares/loginRequired";
 
 const router = new Router();
 
-router.get("/", userController.index);
 router.post("/", userController.insert);
 router.put("/:email", loginRequired, userController.update);
 router.put("/password/:email", loginRequired, userController.updatePassword);

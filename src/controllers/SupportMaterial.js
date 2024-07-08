@@ -14,7 +14,7 @@ class SupportMaterialController {
     async indexByLesson(req, res) {
         try {
             const materials = new SupportMaterial();
-            const result = await materials.selectByLesson(req.params.lesson);
+            const result = await materials.selectByLesson(req.params.lesson, req.params.user);
             res.status(200).send(result);
         } catch (e) {
             console.error(e);

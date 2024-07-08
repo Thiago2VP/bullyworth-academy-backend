@@ -14,7 +14,7 @@ class LessonController {
     async indexByCourse(req, res) {
         try {
             const lessons = new Lesson();
-            const result = await lessons.selectByCourse(req.params.course);
+            const result = await lessons.selectByCourse(req.params.course, req.params.user);
             res.status(200).send(result);
         } catch (e) {
             console.error(e);

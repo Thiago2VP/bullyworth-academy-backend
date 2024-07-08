@@ -21,6 +21,16 @@ class CourseController {
     }
   }
 
+  async indexByStudent(req, res) {
+    try {
+      const courses = new Course();
+      const result = await courses.selectByStudent(req.params.student);
+      res.status(200).send(result);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   async insert(req, res) {
     try {
       const courses = new Course();

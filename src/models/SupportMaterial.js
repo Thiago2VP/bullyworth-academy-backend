@@ -19,11 +19,34 @@ export default class SupportMaterial {
     }
   }
 
-  async selectByLesson(lesson) {
+  async selectByLesson(lesson, user) {
     try {
       await client.connect();
 
       const collection = client.db(process.env.DATABASE).collection("supportmaterial");
+      const usersCollection = client.db(process.env.DATABASE).collection("user");
+      const lessonsCollection = client.db(process.env.DATABASE).collection("lesson");
+
+      const allUsers = usersCollection.find({}).toArray();
+      const specificUser = allUsers.filter((userI) => userI.email === user)[0];
+      const allLessons = lessonsCollection.find({}).toArray();
+      const specificLesson = allLessons.filter((lessonI) => lessonI.id === lesson)[0];
+
+      if (specificUser.type === "student") {
+        const subsCollection = client.db(process.env.DATABASE).collection("subscription");
+        const allSubs = await subsCollection.find({}).toArray();
+        const validSubs = allSubs.filter((sub) => sub.course === specificLesson.course && sub.student === user);
+        if (!(validSubs.length > 0)) return "Student not subscripted.";
+      } else {
+        const courseCollection = client.db(process.env.DATABASE).collection("course");
+        const allCourses = await courseCollection.find({}).toArray();
+        const validShow = allCourses.filter((courseI) => courseI.teacher === user);
+        let counter = 0;
+        validShow.array.forEach(courses => {
+          if (courses.id === specificLesson.course) counter += 1;
+        });
+        if (counter === 0) return "Course not owned.";
+      }
 
       const allMaterials = await collection.find({}).toArray();
       const result = allMaterials.filter((material) => material.lesson === lesson);
