@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
 import client from "../config/database.js";
 
 dotenv.config();
@@ -19,15 +20,27 @@ export default class Lesson {
     }
   }
 
-  async selectByCourse(course, user) {
+  async selectByCourse(course, user, headers) {
     try {
+      const { authorization } = headers;
+      const [, token] = authorization.split(" ");
+      try {
+        const data = jwt.verify(token, process.env.TOKEN_SECRET);
+        const { id, email } = data;
+        if (email !== user) return "Invalid user";
+      } catch (e) {
+        return "Invalid or expired Token";
+      }
+
       await client.connect();
 
       const collection = client.db(process.env.DATABASE).collection("lesson");
-      const usersCollection = client.db(process.env.DATABASE).collection("user");
+      const usersCollection = client.db(process.env.DATABASE).collection("users");
 
-      const allUsers = usersCollection.find({}).toArray();
+      const allUsers = await usersCollection.find({}).toArray();
       const specificUser = allUsers.filter((userI) => userI.email === user)[0];
+
+      if (!specificUser) return "User not found";
 
       if (specificUser.type === "student") {
         const subsCollection = client.db(process.env.DATABASE).collection("subscription");
@@ -37,12 +50,8 @@ export default class Lesson {
       } else {
         const courseCollection = client.db(process.env.DATABASE).collection("course");
         const allCourses = await courseCollection.find({}).toArray();
-        const validShow = allCourses.filter((courseI) => courseI.teacher === user);
-        let counter = 0;
-        validShow.array.forEach(courses => {
-          if (courses.id === course) counter += 1;
-        });
-        if (counter === 0) return "Course not owned.";
+        const validShow = allCourses.filter((courseI) => courseI.id === course && courseI.teacher === user);
+        if (validShow.length <= 0) return "Course not owned.";
       }
 
       const allLessons = await collection.find({}).toArray();
